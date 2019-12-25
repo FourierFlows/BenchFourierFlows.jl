@@ -17,3 +17,5 @@ deps/src/
 docs/build/
 docs/site/
 
+# Mac OS X
+*.DS_Store
