@@ -20,7 +20,7 @@ nsteps = 500
  nothingfunction(args...) = nothing
 
 
-gr = TwoDGrid(dev, n, L, n, L; T=T, nthreads=4, effort=FFTW.PATIENT)
+gr = TwoDGrid(dev, n, L, n, L; T=T, nthreads=2, effort=FFTW.PATIENT)
 pr = TwoDTurb.Params{T}(ν, nν, 0, 0, nothingfunction)
 vs = TwoDTurb.Vars(dev, gr)
 eq = TwoDTurb.Equation(pr, gr)
@@ -38,12 +38,6 @@ k0, E0 = 6, 0.5
 zetai  = peakedisotropicspectrum(gr, k0, E0, mask=filter)
 TwoDTurb.set_zeta!(prob, zetai)
 
-# # Create Diagnostic -- energy and enstrophy are functions imported at the top.
-# E = Diagnostic(energy, prob; nsteps=nsteps)
-# Z = Diagnostic(enstrophy, prob; nsteps=nsteps)
-# diags = [E, Z] # A list of Diagnostics types passed to "stepforward!" will
-# # be updated every timestep.
-
 startwalltime = time()
 while cl.step < nsteps
   stepforward!(prob, nsubs)
@@ -54,5 +48,5 @@ while cl.step < nsteps
 
   println(log)
 end
-println((time()-startwalltime))
+println((time()-startwalltime)/(nsteps-1), " per time-step")
 println("finished")

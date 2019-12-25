@@ -4,10 +4,14 @@ import pyqg
 import time
 from pyqg.diagnostic_tools import spec_var
 
+tmax = 5.
+dt = 0.01
+nsteps = int(tmax/dt)
+
 # the model object
-m = pyqg.BTModel(L=2.*pi, nx=512, tmax=5.,
-        beta=0., H=1., rek=0., rd=None, dt=0.01,
-        taveint=5., ntd=4)
+m = pyqg.BTModel(L=2.*pi, nx=512, tmax=tmax,
+        beta=0., H=1., rek=0., rd=None, dt=dt,
+        taveint=5., ntd=2)
 
 # McWilliams 84 IC condition
 fk = m.wv != 0
@@ -34,5 +38,5 @@ t = time.time()
 # run the model
 m.run()
 # do stuff
-elapsed = time.time() - t
+elapsed = (time.time() - t)/nsteps
 print(elapsed)
