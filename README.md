@@ -3,7 +3,7 @@ This project benchmarks FourierFlows performance against other similar packages
 
 Results for `nx=ny=512` grid-points:
 
-On *CPU* (2.9 GHz Intel Core i7 Macbook Pro with 16 GB 2133 MHz LPDDR3, using a single thread)
+On *CPU* (2.9 GHz Intel Core i7 Macbook Pro with 16 GB 2133 MHz LPDDR3, using two threads)
 - [GeophysicalFlows.jl v0.3.0](https://github.com/FourierFlows/GeophysicalFlows.jl/tree/v0.3.0): **7.64 ms** per time-step
 - [pyqg v0.2.0](https://github.com/pyqg/pyqg/tree/v0.2.0): **12.50 ms** per time-step
 
@@ -13,7 +13,7 @@ On *GPU* (NVIDIA Tesla K40c GPU, 12GB)
 
 Results for `nx=ny=1024` grid-points:
 
-On *CPU* (2.9 GHz Intel Core i7 Macbook Pro with 16 GB 2133 MHz LPDDR3, using a single thread)
+On *CPU* (2.9 GHz Intel Core i7 Macbook Pro with 16 GB 2133 MHz LPDDR3, using two threads)
 - [GeophysicalFlows.jl v0.3.0](https://github.com/FourierFlows/GeophysicalFlows.jl/tree/v0.3.0): **39.43 ms** per time-step
 - [pyqg v0.2.0](https://github.com/pyqg/pyqg/tree/v0.2.0): **55.76 ms** per time-step
 
