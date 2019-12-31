@@ -1,5 +1,5 @@
 ### dedalus
 
 ```bash
-python pyqg_decaying2Dturbulence.py
+python dedalus_decaying2Dturbulence.py
 ```
