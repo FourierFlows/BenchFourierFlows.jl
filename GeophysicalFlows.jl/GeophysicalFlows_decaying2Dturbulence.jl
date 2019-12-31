@@ -9,18 +9,19 @@ import GeophysicalFlows: peakedisotropicspectrum
 dev = CPU()     # Device (CPU/GPU)
 
 # Parameters
-  n = 512
+  n = 256
   L = 2π
  nν = 2
   ν = 0.0
  dt = 1e-2
+nstepsjit = 5
 nsteps = 500
  nsubs = 500
  T = Float64
  nothingfunction(args...) = nothing
 
 
-gr = TwoDGrid(dev, n, L, n, L; T=T, nthreads=2, effort=FFTW.PATIENT)
+gr = TwoDGrid(dev, n, L, n, L; T=T, nthreads=1, effort=FFTW.PATIENT)
 pr = TwoDTurb.Params{T}(ν, nν, 0, 0, nothingfunction)
 vs = TwoDTurb.Vars(dev, gr)
 eq = TwoDTurb.Equation(pr, gr)
@@ -38,15 +39,20 @@ k0, E0 = 6, 0.5
 zetai  = peakedisotropicspectrum(gr, k0, E0, mask=filter)
 TwoDTurb.set_zeta!(prob, zetai)
 
-startwalltime = time()
-while cl.step < nsteps
-  stepforward!(prob, nsubs)
-  
-  # Message
-  log = @sprintf("step: %04d, t: %d, τ: %.2f min",
-    cl.step, cl.t, (time()-startwalltime)/60)
-
-  println(log)
+for j=1:nstepsjit  #just-in-time compilation
+  stepforward!(prob)
+  dealias!(sol, gr)
 end
-println((time()-startwalltime)/(nsteps-1), " per time-step")
+
+startwalltime = time()
+while cl.step < nsteps+nstepsjit
+  stepforward!(prob)
+  dealias!(sol, gr)
+end
+# # Message
+# log = @sprintf("step: %04d, t: %d, τ: %.2f min",
+#   cl.step, cl.t, (time()-startwalltime)/60)
+# 
+# println(log)
+println(round((time()-startwalltime)/(nsteps-1)*1000, digits=3), " ms per time-step")
 println("finished")
