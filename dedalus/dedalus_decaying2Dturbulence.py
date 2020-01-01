@@ -73,20 +73,21 @@ def peakedisotropicspectrum(xbasis, ybasis, domain, k0=6, energy0=0.5, seed=1234
     psih = phases*psik
     Ein = (modk**2 * np.abs(psih)**2/(nx*ny)**2).sum()
     psih = psih*np.sqrt(energy0/Ein)
-    q, psi = np.fft.irfft2(-modk**2*psih, (nx, ny)), np.fft.irfft2(psih, (nx, ny))
+    q, psi = np.fft.irfft2(-modk**2*psih*filter, (nx, ny)), np.fft.irfft2(psih*filter, (nx, ny))
     return q, psi
 
-q['g'], psi['g'] = peakedisotropicspectrum(xbasis, ybasis, domain, k0=6, energy0=0.5)
+qi, psii = peakedisotropicspectrum(xbasis, ybasis, domain, k0=6, energy0=0.5)
+q['g'], psi['g'] = qi, psii
 q['c'], psi['c'] = q['c']*filter, psi['c']*filter
 
 # Initial timestep
-dt = 0.01
+dt = 0.001
 
 # Integration parameters
 solver.stop_sim_time = np.inf
 solver.stop_wall_time = np.inf
-solver.stop_iteration = 500
-log_cadence=500
+solver.stop_iteration = 5000
+log_cadence=5000
 
 def time_to_log(log_cadence):
     (solver.iteration-1) % log_cadence == 0
@@ -98,7 +99,7 @@ try:
     while solver.ok:
         solver.step(dt)
         q['c'] = q['c']*filter
-        psi['c'] = psi['c']*filter
+        # psi['c'] = psi['c']*filter
         if time_to_log(log_cadence): 
             log(logger, dt)
 except:
@@ -112,5 +113,20 @@ finally:
     logger.info('Time per time-step:  %.3f ms' %((end_run_time-start_run_time)/solver.iteration*1000))
     # logger.info(
     #     'Run time: %f cpu-hr' %((end_run_time-start_run_time)/hour * domain.dist.comm_cart.size))
-
-
+ 
+# import matplotlib.pyplot as plt
+# X, Y = np.meshgrid(x, y)
+# plt.figure(figsize=(10, 4))
+# plt.subplot(121)
+# plt.pcolormesh(X, Y, qi)
+# plt.xlabel("x")
+# plt.ylabel("y")
+# plt.title("vorticity @ t=0")
+# plt.axis("square")
+# plt.subplot(122)
+# plt.pcolormesh(X, Y, q['g'])
+# plt.axis("square")
+# plt.xlabel("x")
+# plt.ylabel("y")
+# plt.title("vorticity @ t= %.2f" %solver.sim_time)
+# plt.savefig("dedalus_n256.png", dpi=400)
