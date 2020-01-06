@@ -3,6 +3,7 @@ clear all;
 global invKsq K L Ksq nu nnu filter
 
 maxNumCompThreads(1);
+GPU = 0; % set =1 to run on GPU
 
 nx = 256;
 ny = nx;
@@ -53,6 +54,11 @@ psih0 = psih0*sqrt(0.5/Etemp);
 qh0 = -Ksq.*psih0.*filter;
 qh = qh0;
 
+if GPU==1
+    qh = gpuArray(qh); K = gpuArray(K); L = gpuArray(L); Ksq = gpuArray(Ksq);
+    invKsq = gpuArray(invKsq); filter = gpuArray(filter);
+end
+
 % first two time-steps using Forward Euler
 T(2) = dt;
 RHSpp = RHS_eq(qh);
@@ -70,6 +76,11 @@ end
 elapsed = toc;
 
 disp(['Time per time-step: ', num2str(elapsed/(nsteps-2)*1000, '%1.3f'), ' ms']);
+
+if GPU==1
+    qh = gather(qh); K = gather(K); L = gather(L); Ksq = gather(Ksq);
+    invKsq = gather(invKsq); filter = gather(filter);
+end
 
 % figure()
 % set(gcf,'units','inches','position',[3, 3, 10, 4])

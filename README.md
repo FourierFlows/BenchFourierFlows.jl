@@ -21,6 +21,7 @@ On *GPU* (NVIDIA Tesla K40c GPU, 12GB)
 | package        | Time per time-step  |
 | -------------  |:-------------:| 
 |[GeophysicalFlows.jl #b15419e](https://github.com/FourierFlows/GeophysicalFlows.jl/tree/b15419e4fe093666c0b72cf1191328e631c5ed20) | **1.02 ms** |
+|matlab R2016b|  **0.975 ms** |
 
 <br/>
 <br/>
@@ -42,3 +43,4 @@ On *GPU* (NVIDIA Tesla K40c GPU, 12GB)
 | package        | Time per time-step  |
 | -------------  |:-------------:| 
 | [GeophysicalFlows.jl #b15419e](https://github.com/FourierFlows/GeophysicalFlows.jl/tree/b15419e4fe093666c0b72cf1191328e631c5ed20) | **13.96 ms** |
+|matlab R2016b|  **7.353 ms** |
