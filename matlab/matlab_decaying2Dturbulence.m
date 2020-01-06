@@ -71,24 +71,23 @@ elapsed = toc;
 
 disp(['Time per time-step: ', num2str(elapsed/(nsteps-2)*1000, '%1.3f'), ' ms']);
 
-figure()
-set(gcf,'units','inches','position',[3, 3, 10, 4])
-subplot(1,2,1)
-pcolor2(X, Y, real(ifft2(qh0)))
-set(gca, 'fontsize', 12, 'Box', 'on', 'layer', 'top')
-xticks(-3:3); yticks(-3:3);
-xlabel('$x$', 'fontsize', 16, 'Interpreter', 'latex')
-ylabel('$y$', 'fontsize', 16, 'Interpreter', 'latex')
-title('vorticity @ $t=0$', 'fontsize', 16, 'Interpreter', 'latex')
-axis square
-subplot(1,2,2)
-pcolor2(X, Y, real(ifft2(qh)))
-set(gca, 'fontsize', 12, 'Box', 'on', 'layer', 'top')
-xticks(-3:3); yticks(-3:3);
-xlabel('$x$', 'fontsize', 16, 'Interpreter', 'latex')
-ylabel('$y$', 'fontsize', 16, 'Interpreter', 'latex')
-title(['vorticity @ $t=' num2str(T(end)) '$'], 'fontsize', 16, 'Interpreter', 'latex')
-axis square;
-
-set(gcf,'PaperPositionMode','auto')
-print('matlab_n256.png', '-dpng', '-r400'); 
+% figure()
+% set(gcf,'units','inches','position',[3, 3, 10, 4])
+% subplot(1,2,1)
+% pcolor2(X, Y, real(ifft2(qh0)))
+% set(gca, 'fontsize', 12, 'Box', 'on', 'layer', 'top')
+% xticks(-3:3); yticks(-3:3);
+% xlabel('$x$', 'fontsize', 16, 'Interpreter', 'latex')
+% ylabel('$y$', 'fontsize', 16, 'Interpreter', 'latex')
+% title('vorticity @ $t=0$', 'fontsize', 16, 'Interpreter', 'latex')
+% axis square
+% subplot(1,2,2)
+% pcolor2(X, Y, real(ifft2(qh)))
+% set(gca, 'fontsize', 12, 'Box', 'on', 'layer', 'top')
+% xticks(-3:3); yticks(-3:3);
+% xlabel('$x$', 'fontsize', 16, 'Interpreter', 'latex')
+% ylabel('$y$', 'fontsize', 16, 'Interpreter', 'latex')
+% title(['vorticity @ $t=' num2str(T(end)) '$'], 'fontsize', 16, 'Interpreter', 'latex')
+% axis square;
+% set(gcf,'PaperPositionMode','auto')
+% print('matlab_n256.png', '-dpng', '-r400'); 
