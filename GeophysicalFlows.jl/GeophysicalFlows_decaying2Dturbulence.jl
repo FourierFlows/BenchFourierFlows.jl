@@ -49,8 +49,9 @@ startwalltime = time()
 while cl.step < nsteps
   stepforward!(prob)
 end
+elapsed = (time()-startwalltime)/(nsteps-1)*1000
 
-println(round((time()-startwalltime)/(nsteps-1)*1000, digits=3), " ms per time-step")
+println(round(elapsed, digits=3), " ms per time-step")
 
 # using PyPlot
 # TwoDTurb.updatevars!(prob)
