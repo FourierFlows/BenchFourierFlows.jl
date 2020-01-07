@@ -7,16 +7,21 @@ from dedalus.extras import plot_tools
 
 from numpy import pi
 
+# Parameters
+Lx = Ly = 2 * pi
+nx = ny = 256
+dealias = 1
+nu = 0.
+dt = 0.01
+stop_iteration = 500
+startup_iterations = 10
+
 logger = logging.getLogger(__name__)
 minute = 60.0
 hour = 60*minute
 
-Lx, Ly = 2*pi, 2*pi
-nx, ny = 256, 256
-nu = 0.
-
-xbasis = de.Fourier('x', nx, interval=(-Lx/2, Lx/2), dealias=1)
-ybasis = de.Fourier('y', ny, interval=(-Ly/2, Ly/2), dealias=1)
+xbasis = de.Fourier('x', nx, interval=(-Lx/2, Lx/2), dealias=dealias)
+ybasis = de.Fourier('y', ny, interval=(-Ly/2, Ly/2), dealias=dealias)
 domain = de.Domain([xbasis, ybasis], grid_dtype=np.float64)
 
 x, y = domain.grid(0), domain.grid(1)
@@ -85,14 +90,11 @@ psi['c'] *= filter
 q['c'] *= filter
 qi = q['g'].copy()
 
-# Initial timestep
-dt = 0.01
-
 # Integration parameters
 solver.stop_sim_time = np.inf
 solver.stop_wall_time = np.inf
-solver.stop_iteration = 500
-log_cadence = 500
+solver.stop_iteration = stop_iteration
+log_cadence = stop_iteration
 
 def time_to_log(log_cadence):
     (solver.iteration-1) % log_cadence == 0
@@ -100,8 +102,9 @@ def time_to_log(log_cadence):
 # Main loop
 try:
     logger.info('Starting loop')
-    start_run_time = time.time()
     while solver.ok:
+        if solver.iteration == startup_iterations:
+            start_run_time = time.time()
         solver.step(dt)
         q['c'] = q['c']*filter
         # psi['c'] = psi['c']*filter
@@ -115,7 +118,7 @@ finally:
     logger.info('Iterations: %i' %solver.iteration)
     logger.info('Sim end time: %f' %solver.sim_time)
     logger.info('Run time: %.2f sec' %(end_run_time-start_run_time))
-    logger.info('Time per time-step:  %.3f ms' %((end_run_time-start_run_time)/solver.iteration*1000))
+    logger.info('Time per time-step:  %.3f ms' %((end_run_time-start_run_time)/(solver.iteration - startup_iterations)*1000))
     # logger.info(
     #     'Run time: %f cpu-hr' %((end_run_time-start_run_time)/hour * domain.dist.comm_cart.size))
 
