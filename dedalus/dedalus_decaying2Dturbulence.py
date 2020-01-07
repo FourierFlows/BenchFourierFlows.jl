@@ -9,8 +9,8 @@ from numpy import pi
 
 # Parameters
 Lx = Ly = 2 * pi
-nx = ny = 256
-dealias = 1
+nx = ny = 170
+dealias = 256/170
 nu = 0.
 dt = 0.01
 stop_iteration = 500
@@ -26,25 +26,19 @@ domain = de.Domain([xbasis, ybasis], grid_dtype=np.float64)
 
 x, y = domain.grid(0), domain.grid(1)
 
-variables = ['q', 'psi']
+variables = ['psi']
 problem = de.IVP(domain, variables=variables, time='t')
-
 problem.parameters['nu'] = nu
-
 problem.substitutions['J(a, b)'] = "dx(a)*dy(b) - dy(a)*dx(b)"
 problem.substitutions['lap(a)'] = "d(a, x=2) + d(a, y=2)"
-
-# Equations
+problem.substitutions['q'] = "lap(psi)"
 problem.add_equation("dt(q) + nu*lap(lap(q)) = - J(psi, q)", condition="(nx != 0) or (ny != 0)")
-problem.add_equation("q - lap(psi) = 0")
 problem.add_equation("psi = 0", condition="(nx == 0) and (ny == 0)")
-
 
 start_build_time = time.time()
 solver = problem.build_solver(de.timesteppers.SBDF2)
 logger.info('Solver built. (t = %f) ' %(time.time()-start_build_time))
 
-q = solver.state['q']
 psi = solver.state['psi']
 
 def constructfilter(domain):
@@ -84,10 +78,11 @@ def peakedisotropicspectrum(domain, k0=6, energy0=0.5, seed=1234):
     psi['g'] *= (energy0 / Ein['g'])**0.5
     return psi
 
+psi.set_scales(domain.dealias)
 psi['g'] = peakedisotropicspectrum(domain, k0=6, energy0=0.5)['g']
-q['c'] = problem.namespace['lap'](psi).evaluate()['c']
 psi['c'] *= filter
-q['c'] *= filter
+q = problem.namespace['q'].evaluate()
+q.set_scales(domain.dealias)
 qi = q['g'].copy()
 
 # Integration parameters
@@ -106,8 +101,7 @@ try:
         if solver.iteration == startup_iterations:
             start_run_time = time.time()
         solver.step(dt)
-        q['c'] = q['c']*filter
-        # psi['c'] = psi['c']*filter
+        psi['c'] *= filter
         if time_to_log(log_cadence):
             log(logger, dt)
 except:
@@ -123,6 +117,7 @@ finally:
     #     'Run time: %f cpu-hr' %((end_run_time-start_run_time)/hour * domain.dist.comm_cart.size))
 
 # Gather distributed snapshots
+q = problem.namespace['q'].evaluate()
 qf = q['g'].copy()
 qi = domain.dist.comm.gather(qi, root=0)
 qf = domain.dist.comm.gather(qf, root=0)
@@ -132,7 +127,7 @@ if domain.dist.comm.rank == 0:
     import matplotlib.pyplot as plt
     qi = np.concatenate(qi, axis=1)
     qf = np.concatenate(qf, axis=1)
-    X, Y = plot_tools.quad_mesh(xbasis.grid(1), ybasis.grid(1))
+    X, Y = plot_tools.quad_mesh(xbasis.grid(dealias), ybasis.grid(dealias))
     plt.figure(figsize=(10, 4))
     plt.subplot(121)
     plt.pcolormesh(X, Y, qi.T)
