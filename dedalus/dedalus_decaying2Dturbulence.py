@@ -116,29 +116,29 @@ finally:
     # logger.info(
     #     'Run time: %f cpu-hr' %((end_run_time-start_run_time)/hour * domain.dist.comm_cart.size))
 
-# Gather distributed snapshots
-q = problem.namespace['q'].evaluate()
-qf = q['g'].copy()
-qi = domain.dist.comm.gather(qi, root=0)
-qf = domain.dist.comm.gather(qf, root=0)
-
-# Plot from root
-if domain.dist.comm.rank == 0:
-    import matplotlib.pyplot as plt
-    qi = np.concatenate(qi, axis=1)
-    qf = np.concatenate(qf, axis=1)
-    X, Y = plot_tools.quad_mesh(xbasis.grid(dealias), ybasis.grid(dealias))
-    plt.figure(figsize=(10, 4))
-    plt.subplot(121)
-    plt.pcolormesh(X, Y, qi.T)
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.title("vorticity @ t=0")
-    plt.axis("square")
-    plt.subplot(122)
-    plt.pcolormesh(X, Y, qf.T)
-    plt.axis("square")
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.title("vorticity @ t= %.2f" %solver.sim_time)
-    plt.savefig("dedalus_n"+str(nx)+".png", dpi=400)
+# # Gather distributed snapshots
+# q = problem.namespace['q'].evaluate()
+# qf = q['g'].copy()
+# qi = domain.dist.comm.gather(qi, root=0)
+# qf = domain.dist.comm.gather(qf, root=0)
+# 
+# # Plot from root
+# if domain.dist.comm.rank == 0:
+#     import matplotlib.pyplot as plt
+#     qi = np.concatenate(qi, axis=1)
+#     qf = np.concatenate(qf, axis=1)
+#     X, Y = plot_tools.quad_mesh(xbasis.grid(dealias), ybasis.grid(dealias))
+#     plt.figure(figsize=(10, 4))
+#     plt.subplot(121)
+#     plt.pcolormesh(X, Y, qi.T)
+#     plt.xlabel("x")
+#     plt.ylabel("y")
+#     plt.title("vorticity @ t=0")
+#     plt.axis("square")
+#     plt.subplot(122)
+#     plt.pcolormesh(X, Y, qf.T)
+#     plt.axis("square")
+#     plt.xlabel("x")
+#     plt.ylabel("y")
+#     plt.title("vorticity @ t= %.2f" %solver.sim_time)
+#     plt.savefig("dedalus_n"+str(nx)+".png", dpi=400)
