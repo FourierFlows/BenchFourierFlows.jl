@@ -9,11 +9,11 @@ from numpy import pi
 
 # Parameters
 Lx = Ly = 2 * pi
-nx = ny = 170
-dealias = 256/170
+nx = ny = 256
+dealias = 1
 nu = 0.
-dt = 0.01
-stop_iteration = 500
+dt = 0.001
+stop_iteration = 5000
 startup_iterations = 10
 
 logger = logging.getLogger(__name__)
@@ -29,14 +29,14 @@ x, y = domain.grid(0), domain.grid(1)
 variables = ['psi']
 problem = de.IVP(domain, variables=variables, time='t')
 problem.parameters['nu'] = nu
-problem.substitutions['J(a, b)'] = "dx(a)*dy(b) - dy(a)*dx(b)"
+problem.substitutions['J(a, b)'] = "dy(dx(a)*b) - dx(dy(a)*b)" # Laplacian in conservative form
 problem.substitutions['lap(a)'] = "d(a, x=2) + d(a, y=2)"
 problem.substitutions['q'] = "lap(psi)"
 problem.add_equation("dt(q) + nu*lap(lap(q)) = - J(psi, q)", condition="(nx != 0) or (ny != 0)")
 problem.add_equation("psi = 0", condition="(nx == 0) and (ny == 0)")
 
 start_build_time = time.time()
-solver = problem.build_solver(de.timesteppers.SBDF2)
+solver = problem.build_solver(de.timesteppers.SBDF3)
 logger.info('Solver built. (t = %f) ' %(time.time()-start_build_time))
 
 psi = solver.state['psi']
@@ -141,4 +141,4 @@ if domain.dist.comm.rank == 0:
     plt.xlabel("x")
     plt.ylabel("y")
     plt.title("vorticity @ t= %.2f" %solver.sim_time)
-    plt.savefig("dedalus_n256.png", dpi=400)
+    plt.savefig("dedalus_n"+str(nx)+".png", dpi=400)
