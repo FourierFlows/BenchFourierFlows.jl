@@ -14,7 +14,7 @@ dev = CPU()     # Device (CPU/GPU)
  nν = 2
   ν = 0.0
  dt = 1e-3
-nstepsjit = 5 # call stepforward for nstepsjit to force compilation
+nstepsjit = 10 # call stepforward for nstepsjit to force compilation
 nsteps = 5000
  nothingfunction(args...) = nothing
 
@@ -67,4 +67,4 @@ println(round((time()-startwalltime)/(nsteps-1)*1000, digits=3), " ms per time-s
 # xlabel("x")
 # ylabel("y")
 # title("vorticity @ t="*string(round(cl.t, digits=2)))
-# savefig("GeophysicalFlows_n256.png", dpi=400)
+# savefig("GeophysicalFlows_n"*string(n)*".png", dpi=400)
