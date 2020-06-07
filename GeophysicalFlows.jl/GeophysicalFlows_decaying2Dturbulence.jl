@@ -2,8 +2,8 @@ using FourierFlows, Printf, Random, FFTW
 
 using Random: seed!
 
-import GeophysicalFlows.TwoDTurb
-import GeophysicalFlows.TwoDTurb: energy, enstrophy
+import GeophysicalFlows.TwoDNavierStokes
+import GeophysicalFlows.TwoDNavierStokes: energy, enstrophy
 import GeophysicalFlows: peakedisotropicspectrum
 
 dev = CPU()     # Device (CPU/GPU)
@@ -20,9 +20,9 @@ nsteps = 5000
 
 
 gr = TwoDGrid(dev, n, L, n, L; nthreads=1)
-pr = TwoDTurb.Params(ν, nν)
-vs = TwoDTurb.Vars(dev, gr)
-eq = TwoDTurb.Equation(pr, gr)
+pr = TwoDNavierStokes.Params(ν, nν)
+vs = TwoDNavierStokes.Vars(dev, gr)
+eq = TwoDNavierStokes.Equation(pr, gr)
 
 prob = FourierFlows.Problem(eq, "FilteredAB3", dt, gr, vs, pr, dev)
 filter = FourierFlows.makefilter(prob.eqn)
@@ -37,13 +37,13 @@ x, y = gridpoints(gr)
 seed!(1234)
 k0, E0 = 6, 0.5
 zetai  = peakedisotropicspectrum(gr, k0, E0, mask=filter)
-TwoDTurb.set_zeta!(prob, zetai)
+TwoDNavierStokes.set_zeta!(prob, zetai)
 
 for j=1:nstepsjit  #just-in-time compilation
   stepforward!(prob)
 end
 
-TwoDTurb.set_zeta!(prob, zetai)
+TwoDNavierStokes.set_zeta!(prob, zetai)
 
 startwalltime = time()
 while cl.step < nsteps
@@ -53,7 +53,7 @@ end
 println(round((time()-startwalltime)/(nsteps-1)*1000, digits=3), " ms per time-step")
 
 # using PyPlot
-# TwoDTurb.updatevars!(prob)
+# TwoDNavierStokes.updatevars!(prob)
 # figure(figsize=(10, 4))
 # subplot(121)
 # pcolormesh(x, y, zetai)
