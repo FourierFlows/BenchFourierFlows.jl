@@ -71,7 +71,7 @@ end
 % figure()
 % set(gcf,'units','inches','position',[3, 3, 10, 4])
 % subplot(1,2,1)
-% pcolor2(X, Y, real(ifft2(qh0)))
+% pcolor2(X, Y, q0)
 % set(gca, 'fontsize', 12, 'Box', 'on', 'layer', 'top')
 % xticks(-3:3); yticks(-3:3);
 % xlabel('$x$', 'fontsize', 16, 'Interpreter', 'latex')
@@ -87,4 +87,4 @@ end
 % title(['vorticity @ $t=' num2str(T(end)) '$'], 'fontsize', 16, 'Interpreter', 'latex')
 % axis square;
 % set(gcf,'PaperPositionMode','auto')
-% print(['matlab_n' num2str(nx) '.png'], '-dpng', '-r400'); 
+% print(['matlab_n' num2str(nx) '.png'], '-dpng', '-r400');
