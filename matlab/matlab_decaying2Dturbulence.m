@@ -1,9 +1,9 @@
 clear all;
 
-global invKsq K L Ksq nu nnu filter
+global invKsq K L Ksq nu nnu
 
 maxNumCompThreads(1);
-GPU = 0; % set =1 to run on GPU
+GPU = 0; % set equal to 1 to run on GPU
 
 nx = 256;
 ny = nx;
@@ -11,8 +11,8 @@ ny = nx;
 Lx = 2*pi;
 Ly = Lx;
 
-nu = 0.0;
-nnu = 2;
+nu = 1e-4;
+nnu = 1;
 
 dt = 1e-3;
 nsteps = 5000;
@@ -35,24 +35,10 @@ Ksq = K.^2 + L.^2;
 invKsq = 1 ./ Ksq;
 invKsq(Ksq==0)=0;
 
-% creat a filter in wavenumber space;
-% a is chosen so that the energy at the largest nondim
-% wavenumber K*dx be zero whithin machine double precision
-s=4;
-Kmax = ny/2; Kmax_s=Kmax*dy;
-kcut = 2/3*Kmax;kcut_s=kcut*dy;
-a = -log(1e-15)/(Kmax_s-kcut_s)^s * dy^s;
-Kmag=sqrt(Ksq);
-
-filter = ones(ny, nx).*abs(Kmag<=ny/3) + exp(-a*(Kmag-kcut).^s).*abs(Kmag>ny/3);
-
-psih0 = (Ksq.*(1 + (Kmag/6).^4)).^(-1/2) .* (randn(ny, nx) + 1i*randn(ny, nx));
-psih0(1, 1)=0;
-psih0 = fft2(real(ifft2(psih0)));
-Etemp = sum(0.5*Ksq(:).*abs(psih0(:)).^2/(nx*ny)^2);
-psih0 = psih0*sqrt(0.5/Etemp);
-qh0 = -Ksq.*psih0.*filter;
-qh = qh0;
+% Random initial condition
+q0 = randn(ny, nx);
+q0 = q0 - mean(q0);  % make sure initial condition has zero mean
+qh = fft2(q0);
 
 if GPU==1
     qh = gpuArray(qh); K = gpuArray(K); L = gpuArray(L); Ksq = gpuArray(Ksq);
@@ -101,4 +87,4 @@ end
 % title(['vorticity @ $t=' num2str(T(end)) '$'], 'fontsize', 16, 'Interpreter', 'latex')
 % axis square;
 % set(gcf,'PaperPositionMode','auto')
-% print('matlab_n256.png', '-dpng', '-r400'); 
+% print(['matlab_n' num2str(nx) '.png'], '-dpng', '-r400'); 

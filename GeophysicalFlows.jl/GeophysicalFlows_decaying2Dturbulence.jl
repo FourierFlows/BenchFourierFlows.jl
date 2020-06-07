@@ -1,70 +1,64 @@
-using FourierFlows, Printf, Random, FFTW
+using FourierFlows, Printf
+
+import GeophysicalFlows.TwoDNavierStokes
 
 using Random: seed!
-
-import GeophysicalFlows.TwoDTurb
-import GeophysicalFlows.TwoDTurb: energy, enstrophy
-import GeophysicalFlows: peakedisotropicspectrum
+using Statistics: mean
 
 dev = CPU()     # Device (CPU/GPU)
 
 # Parameters
-  n = 256
-  L = 2π
- nν = 2
-  ν = 0.0
- dt = 1e-3
-nstepsjit = 10 # call stepforward for nstepsjit to force compilation
+ n = 256
+ L = 2π
+ ν = 1e-4
+nν = 1
+dt = 1e-3
+nsteps_jit = 10 # call stepforward for nsteps_jit to force compilation
 nsteps = 5000
- nothingfunction(args...) = nothing
+stepper = "AB3"
+floattype = Float64
 
+grid2D = TwoDGrid(dev, n, L, n, L; nthreads=1, T=floattype)
+params = TwoDNavierStokes.Params(ν, nν)
+vars = TwoDNavierStokes.Vars(dev, grid2D)
+equation = TwoDNavierStokes.Equation(params, grid2D)
 
-gr = TwoDGrid(dev, n, L, n, L; nthreads=1)
-pr = TwoDTurb.Params(ν, nν)
-vs = TwoDTurb.Vars(dev, gr)
-eq = TwoDTurb.Equation(pr, gr)
+prob = FourierFlows.Problem(equation, stepper, dt, grid2D, vars, params, dev)
 
-prob = FourierFlows.Problem(eq, "FilteredAB3", dt, gr, vs, pr, dev)
-filter = FourierFlows.makefilter(prob.eqn)
-
-# some aliases
-sol, cl, vs, gr = prob.sol, prob.clock, prob.vars, prob.grid
-
-x, y = gridpoints(gr)
-
-# Initial condition closely following pyqg barotropic example
-# that reproduces the results of the paper by McWilliams (1984)
+# Random initial condition
 seed!(1234)
-k0, E0 = 6, 0.5
-zetai  = peakedisotropicspectrum(gr, k0, E0, mask=filter)
-TwoDTurb.set_zeta!(prob, zetai)
+zeta_initial = randn(floattype, (n, n))
+zeta_initial = zeta_initial .- mean(zeta_initial) # make sure initial condition has zero mean
+TwoDNavierStokes.set_zeta!(prob, zeta_initial)
 
-for j=1:nstepsjit  #just-in-time compilation
+for j=1:nsteps_jit  #just-in-time compilation
   stepforward!(prob)
 end
 
-TwoDTurb.set_zeta!(prob, zetai)
+TwoDNavierStokes.set_zeta!(prob, zeta_initial)
 
 startwalltime = time()
-while cl.step < nsteps
+while prob.clock.step < nsteps
   stepforward!(prob)
+  dealias!(prob.sol, prob.grid)
 end
 
 println(round((time()-startwalltime)/(nsteps-1)*1000, digits=3), " ms per time-step")
 
 # using PyPlot
-# TwoDTurb.updatevars!(prob)
+# x, y = gridpoints(prob.grid)
+# TwoDNavierStokes.updatevars!(prob)
 # figure(figsize=(10, 4))
 # subplot(121)
-# pcolormesh(x, y, zetai)
+# pcolormesh(x, y, zeta_initial)
 # xlabel("x")
 # ylabel("y")
 # title("vorticity @ t=0")
 # axis("square")
 # subplot(122)
-# pcolormesh(x, y, vs.zeta)
+# pcolormesh(x, y, prob.vars.zeta)
 # axis("square")
 # xlabel("x")
 # ylabel("y")
-# title("vorticity @ t="*string(round(cl.t, digits=2)))
+# title("vorticity @ t="*string(round(prob.clock.t, digits=2)))
 # savefig("GeophysicalFlows_n"*string(n)*".png", dpi=400)
